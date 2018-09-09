@@ -12,12 +12,14 @@ buildscript {
 	}
 	dependencies {
 		classpath "gradle.plugin.net.minecrell:licenser:0.3";
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version";
 	}
 }
 
 apply plugin: "java";
 apply plugin: "net.minecrell.licenser";
 apply plugin: "eclipse";
+apply plugin: "org.jetbrains.kotlin.jvm";
 
 group = "blue.endless.jankson";
 archivesBaseName = "Jankson";
@@ -29,10 +31,32 @@ targetCompatibility = 1.8;
 repositories {
 	jcenter()
 	mavenCentral()
+    maven { url "https://dl.bintray.com/spekframework/spek-dev" }
 }
  
 dependencies {
-	testCompile "junit:junit:4.12";
 	
-	compile group: "com.google.code.findbugs", name: "jsr305", version: "3.0.2";
+	implementation group: "com.google.code.findbugs", name: "jsr305", version: "3.0.2";
+
+    testImplementation(group: "org.jetbrains.kotlin", name: "kotlin-test", version: kotlin_version);
+    testCompileOnly "junit:junit:4.12";
+    testRuntimeOnly(group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '+');
+
+	// some version of Kotlin
+    testImplementation(group : "org.jetbrains.kotlin", name : "kotlin-stdlib-jdk8", version : kotlin_version);
+
+    testImplementation(group: "org.spekframework.spek2", name: "spek-dsl-jvm", version: spek_version);
+    testRuntimeOnly(group: "org.spekframework.spek2", name: "spek-runner-junit5", version: spek_version);
+
+	// spek requires kotlin-reflect, can be omitted if already in the classpath
+	testRuntimeOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version");
 }
+
+test {
+    useJUnitPlatform()
+//	useJUnitPlatform {
+//		includeEngines ('spek2')
+//	}
+    failFast = true
+}
+test.dependsOn(cleanTest)
